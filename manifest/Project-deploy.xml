@@ -2,9 +2,7 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>Milestone__c</members>
-        <members>New_Project</members>
         <members>Project__c</members>
-        <members>Teste</members>
         <members>To_do__c</members>
         <name>CustomTab</name>
     </types>
