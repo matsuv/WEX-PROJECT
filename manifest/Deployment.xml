@@ -80,5 +80,9 @@
         <members>To_do_Path</members>
         <name>AnimationRule</name>
     </types>
+    <types>
+        <members>Project_Permission_Wex</members>
+        <name>PermissionSet</name>
+    </types>
     <version>63.0</version>
 </Package>
