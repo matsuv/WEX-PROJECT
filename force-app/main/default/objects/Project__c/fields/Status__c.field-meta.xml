@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <description>A field to show the current status of the project.</description>
+    <inlineHelpText>Not Started = 0%
+In Progress &gt;= 1% and &lt;= 99%
+Complete = 100%</inlineHelpText>
+    <label>Status</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetName>Status</valueSetName>
+    </valueSet>
+</CustomField>

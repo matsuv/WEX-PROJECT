@@ -1,0 +1,76 @@
+<template>
+    <lightning-card title="New Project">
+        <div class="slds-p-around_medium">
+
+            <!-- Project Name-->
+             <lightning-layout >
+                <lightning-layout-item size="4" padding="around-small">
+                    <lightning-input label="Project Name" value={projectName} onchange={handleProjectNameChange}></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="4" padding="around-small">
+                    <!-- Owner -->
+                    <lightning-record-picker  required=true label="Owner" placeholder="Search for users..." object-api-name="User" onchange={handleProjectOwnerChange} >
+                    </lightning-record-picker>
+                </lightning-layout-item>
+             </lightning-layout>            
+
+            <!-- Milestones  List -->
+            <template for:each={milestones} for:item="milestone">
+                <div key={milestone.id} class="slds-box slds-m-top_medium">
+
+                    <!-- Milestone Name -->
+                    <lightning-layout >
+                        <lightning-layout-item size="4" padding="around-small">
+                            <lightning-input label="Milestone name" value={milestone.name} data-id={milestone.id} onchange={handleMilestoneNameChange}></lightning-input>
+                        </lightning-layout-item>    
+                     </lightning-layout>
+                     <hr/>
+                     
+
+                    <!-- List  To-Dos -->
+                    <template for:each={milestone.toDos} for:item="todo">
+                        <div key={todo.id} class="slds-p-left_medium slds-m-top_small">
+                            <lightning-layout >
+
+                                <lightning-layout-item size="4" padding="around-small">
+                                    <lightning-input label="To do Name" value={todo.name} data-milestone-id={milestone.id} data-todo-id={todo.id} onchange={handleToDoNameChange}></lightning-input> 
+                                </lightning-layout-item>    
+                             </lightning-layout>
+
+                             <lightning-layout >
+                                <lightning-layout-item size="2" padding="around-small">
+                                    <lightning-button label="Remove Todo" variant="destructive-text"  data-id={todo.id} data-milestone-id={milestone.id} onclick={handleRemoveToDo}></lightning-button>
+                                </lightning-layout-item>    
+                             </lightning-layout>
+
+                             <hr/>
+                        </div>
+                    </template>
+
+                    <lightning-layout >
+
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-button label="Remove Milestone" variant="destructive-text"  data-id={milestone.id} onclick={handleRemoveMilestone}></lightning-button>
+                        </lightning-layout-item>    
+                        <lightning-layout-item size="2" padding="around-small">
+                            <lightning-button label="Add To do" data-milestone-id={milestone.id} onclick={addToDo}></lightning-button>
+                        </lightning-layout-item>  
+                     </lightning-layout>                    
+                </div>
+            </template>
+
+            <lightning-layout >
+                <lightning-layout-item size="4" padding="around-small">
+                    <lightning-button label="Add Milestone" class="slds-m-top_medium" onclick={addMilestone}></lightning-button>
+                </lightning-layout-item>     
+             </lightning-layout>
+
+             <lightning-layout>
+                <lightning-layout-item size="4"  padding="around-small">
+                    <lightning-button label="Submit Full Project" variant="success"  class="slds-m-top_medium" onclick={handleSubmit}></lightning-button>              
+                </lightning-layout-item>   
+             </lightning-layout>
+             
+        </div>
+    </lightning-card>
+</template>
