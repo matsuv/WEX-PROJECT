@@ -4,10 +4,6 @@
         <members>*</members>
         <name>ApexClass</name>
     </types>
-<types>
-        <members>*</members> <!-- ou nome específico, ex: Admin -->
-        <name>Profile</name>
-    </types>
     <types>
         <members>*</members>
         <name>ApexComponent</name>
