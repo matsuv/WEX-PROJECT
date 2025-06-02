@@ -74,5 +74,11 @@
         <members>To_do_Path</members>
         <name>PathAssistant</name>
     </types>
+    <types>
+        <members>Milestone_Status</members>
+        <members>Status</members>
+        <members>To_do_Path</members>
+        <name>AnimationRule</name>
+    </types>
     <version>63.0</version>
 </Package>
