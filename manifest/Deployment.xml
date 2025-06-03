@@ -84,5 +84,9 @@
         <members>Project_Permission_Wex</members>
         <name>PermissionSet</name>
     </types>
+    <types>
+        <members>PathAssistant</members>
+        <name>Settings</name>
+    </types>
     <version>63.0</version>
 </Package>
