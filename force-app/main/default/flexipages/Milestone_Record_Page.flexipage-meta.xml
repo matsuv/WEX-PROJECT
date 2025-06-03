@@ -88,7 +88,7 @@
             <fieldInstance>
                 <fieldInstanceProperties>
                     <name>uiBehavior</name>
-                    <value>none</value>
+                    <value>readonly</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Status__c</fieldItem>
                 <identifier>RecordStatus_cField</identifier>
@@ -101,7 +101,7 @@
                     <value>none</value>
                 </fieldInstanceProperties>
                 <fieldItem>Record.Complete_Percent__c</fieldItem>
-                <identifier>RecordComplete_Percent_cField2</identifier>
+                <identifier>RecordComplete_Percent__cField</identifier>
             </fieldInstance>
         </itemInstances>
         <name>Facet-f92de637-4521-489c-8835-ababc25c3219</name>
