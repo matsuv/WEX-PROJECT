@@ -2,12 +2,12 @@ public with sharing class TodoTriggerHandler {
     
     public static void calculatePercentToMilestone(List<To_do__c> listNewTodos, Map<Id,To_do__c> oldMap){
         Set<Id> setIdMilestons = new Set<Id>();
-        Set<Id> setIdTodo = new Set<Id>();
+        Set<Id> setIdDisconsider = new Set<Id>();
 
         if(Trigger.isDelete){
             for(To_do__c todo : oldMap.values()){
                 setIdMilestons.add(todo.Milestone__c);
-                setIdTodo.add(todo.id);
+                setIdDisconsider.add(todo.id);
             }
         }
         else{
@@ -22,47 +22,32 @@ public with sharing class TodoTriggerHandler {
                 }
             }
         }
-        
 
-        if(!setIdMilestons.isEmpty()){
-            Map<String,Integer> mapMilestonesByStatus = new Map<String,Integer>();
-            Map<String,Integer> mapTotalItens = new Map<String,Integer>();   
-            Map<String, Milestone__c> mapMilestones = new Map<String, Milestone__c>();         
-            String status,idMilestone;
-            Integer totalItens = 0, totalComplete = 0,totalInProgress = 0;
+        if(setIdMilestons.size() > 0){
+            Map<Id,Milestone__c> mapMilestonesUpp = new Map<Id,Milestone__c>();
+            Milestone__c milestoneInstance;
+            Boolean hasAnyCompleteItem,anyoneStarted,notInitiated;
 
-            for(AggregateResult agg : [SELECT milestone__c idMilestone, Status__c status,count(id) totalItens FROM To_do__c WHERE milestone__c IN:setIdMilestons AND id not in :setIdTodo GROUP BY milestone__c,Status__c ]){
-                status = (String) agg.get('status');
-                idMilestone = (String) agg.get('idMilestone');
-                totalItens = (Integer) agg.get('totalItens');
-
-                mapMilestonesByStatus.put(idMilestone +'-'+ status , totalItens);
+            for(Milestone__c milestone : [SELECT Id, Status__c, (SELECT Id, Status__c FROM To_do__r WHERE Id NOT IN :setIdDisconsider) FROM Milestone__c WHERE Id IN :setIdMilestons WITH SECURITY_ENFORCED]){
+                hasAnyCompleteItem = false;
+                anyoneStarted = false;
+                notInitiated = false;
                 
-                if(mapTotalItens.containsKey(idMilestone)) mapTotalItens.put(idMilestone, totalItens + mapTotalItens.get(idMilestone));
-                else mapTotalItens.put(idMilestone,totalItens);
-            }
+                milestoneInstance = new Milestone__c();
+                milestoneInstance.id = milestone.id;
 
-            if(!mapMilestonesByStatus.isEmpty()){
-                for(String MilestoneId : setIdMilestons){
-                    milestone__c milestone = new milestone__c();
-                    milestone.id = MilestoneId;
-                    milestone.Complete_Percent__c = 0;
-                    milestone.Status__c = 'Not Started';
-
-                    if(mapTotalItens.containsKey(MilestoneId)){
-                        totalItens = mapTotalItens.get(MilestoneId);
-                        totalInProgress = mapMilestonesByStatus.containsKey(MilestoneId +'-'+ 'In Progress') ? mapMilestonesByStatus.get(MilestoneId +'-'+ 'In Progress') : 0;
-                        totalComplete = mapMilestonesByStatus.containsKey(MilestoneId +'-'+ 'Complete') ? mapMilestonesByStatus.get(MilestoneId +'-'+ 'Complete') : 0;
-                        milestone.Complete_Percent__c = totalComplete * 100 / totalItens;                        
-                    }
-
-                    milestone.Status__c = milestone.Complete_Percent__c == 100 ? 'Complete' : (totalInProgress > 0 || milestone.Complete_Percent__c > 0)  ?  'In Progress' :'Not Started' ;
-
-                    mapMilestones.put(milestone.id, milestone);                    
+                for(To_do__c item : milestone.To_do__r){
+                    if(item.Status__c == 'Complete') hasAnyCompleteItem = true;
+                    else if(item.Status__c == 'In Progress') anyoneStarted = true;
+                    else notInitiated = true;
                 }
 
-                UPDATE mapMilestones.values();
+                milestoneInstance.Status__c = hasAnyCompleteItem && !anyoneStarted && !notInitiated ? 'Complete' : (anyoneStarted || hasAnyCompleteItem) ? 'In Progress' : 'Not Started';
+                
+                if(milestone.Status__c != milestoneInstance.Status__c) mapMilestonesUpp.put(milestoneInstance.id, milestoneInstance);
             }
+            
+            UPDATE  mapMilestonesUpp.values();
         }
     }
 }

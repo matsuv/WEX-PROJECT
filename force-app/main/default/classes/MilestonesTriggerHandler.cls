@@ -1,12 +1,12 @@
 public with sharing class MilestonesTriggerHandler {
     public static void calculatePercentToMilestone(List<Milestone__c> listNewmilestones, Map<Id,Milestone__c> oldMap){
         Set<Id> setIdProjects = new Set<Id>();
-        Set<Id> setIdMilestone = new Set<Id>();
+        Set<Id> setIdsDisconsider = new Set<Id>();
 
         if(Trigger.isDelete){
             for(Milestone__c milestone : oldMap.values()){                
                 setIdProjects.add(milestone.Project__c);
-                setIdMilestone.add(milestone.id);
+                setIdsDisconsider.add(milestone.id);
             }
         }else{
             for(Milestone__c milestone : listNewmilestones){
@@ -20,50 +20,32 @@ public with sharing class MilestonesTriggerHandler {
                 }
             }
         }
-        
-        if(!setIdProjects.isEmpty()){
-            Map<String,Integer> mapProjectByStatus = new Map<String,Integer>();
-            Map<String,Integer> mapTotalItens = new Map<String,Integer>();   
-            Map<String, Project__c> mapProjects = new Map<String, Project__c>();         
-            String status,idProject;
-            Integer totalItens = 0, totalComplete = 0, totalInProgress = 0;
 
-            for(AggregateResult agg : [SELECT Project__c idProject, Status__c status,count(id) totalItens FROM Milestone__c WHERE Project__c IN:setIdProjects AND ID NOT IN: setIdMilestone GROUP BY Project__c,Status__c ]){
-                status = (String) agg.get('status');
-                idProject = (String) agg.get('idProject');
-                totalItens = (Integer) agg.get('totalItens');
+        if(setIdProjects.size() > 0){
+            Map<Id,Project__c> mapProjectsUpp = new Map<Id,Project__c>();
+            Project__c projectInstance;
+            Boolean hasAnyCompleteItem,anyoneStarted,notInitiated;
 
-                mapProjectByStatus.put(idProject +'-'+ status, totalItens);
+            for(Project__c project : [SELECT Id, Status__c, (SELECT Id, Status__c FROM Milestones__r WHERE Id NOT IN :setIdsDisconsider) FROM Project__c WHERE Id IN :setIdProjects]){
+                hasAnyCompleteItem = false;
+                anyoneStarted = false;
+                notInitiated = false;
+                
+                projectInstance = new Project__c();
+                projectInstance.id = project.id;
 
-                if(mapTotalItens.containsKey(idProject)) mapTotalItens.put(idProject, totalItens + mapTotalItens.get(idProject));
-                else mapTotalItens.put(idProject, totalItens);
-            }
-
-            if(!mapProjectByStatus.isEmpty()){
-                for(String projectId : setIdProjects){
-                    Project__c project = new Project__c();
-                    project.id = projectId;
-                    project.Complete_Percent__c = 0;
-                    project.Status__c = 'Not Started';
-
-                    if(mapTotalItens.containsKey(projectId)){
-                        totalItens = mapTotalItens.get(projectId);
-                        totalInProgress = mapProjectByStatus.containsKey(projectId +'-'+ 'In Progress') ? mapProjectByStatus.get(projectId +'-'+ 'In Progress') : 0;
-                        totalComplete = mapProjectByStatus.containsKey(projectId +'-'+ 'Complete') ? mapProjectByStatus.get(projectId +'-'+ 'Complete') : 0;
-                        project.Complete_Percent__c = totalComplete * 100 / totalItens;                        
-                    }
-
-                    system.debug('proejto' + project.Complete_Percent__c);
-                    system.debug('mapProjectByStatus' + mapProjectByStatus);
-                    system.debug('totalInProgress' + totalInProgress);
-
-                    project.Status__c = project.Complete_Percent__c == 100 ? 'Complete' : (totalInProgress > 0 || project.Complete_Percent__c > 0)   ?  'In Progress' :'Not Started' ;
-
-                    mapProjects.put(project.id, project);                    
+                for(Milestone__c milestone : project.Milestones__r){
+                    if(milestone.Status__c == 'Complete') hasAnyCompleteItem = true;
+                    else if(milestone.Status__c == 'In Progress') anyoneStarted = true;
+                    else notInitiated = true;
                 }
 
-                UPDATE mapProjects.values();
+                projectInstance.Status__c = hasAnyCompleteItem && !anyoneStarted && !notInitiated ? 'Complete' : (anyoneStarted || hasAnyCompleteItem) ? 'In Progress' : 'Not Started';
+                
+                if(project.Status__c != projectInstance.Status__c) mapProjectsUpp.put(projectInstance.id, projectInstance);
             }
+            
+            UPDATE  mapProjectsUpp.values();
         }
     }
 }
