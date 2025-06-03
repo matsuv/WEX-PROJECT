@@ -80,13 +80,11 @@ export default class NewProject extends LightningElement {
     }
 
     handleSubmit() { 
-        console.log('handleSubmit '+ this.userId);
         
         const milestones = this.milestones.map(milestone => ({
             id: milestone.id,
             name: milestone.name
           }));
-          console.log('milestones '+ milestones);
           
         const toDos = this.milestones.map(milestone =>
             milestone.toDos.map(toDo => ({
@@ -100,7 +98,6 @@ export default class NewProject extends LightningElement {
             listMilestones : milestones,
             listToDos : toDos.flat()
         }
-        console.log('toDostoDos '+ JSON.stringify(objApex));
 
         //Validade Owner
         if(!this.userId){
@@ -121,7 +118,6 @@ export default class NewProject extends LightningElement {
         var containsError = false;
         //Validate Records
         objApex.listMilestones.forEach(element => {
-            console.log('Milestone-name '+ element.name);
             if(!element.name){
                 containsError = true;
                 this.showInfoToast('Warning', 'warning', 'Please fill all the name fields of the Milestones before you send');
@@ -131,7 +127,6 @@ export default class NewProject extends LightningElement {
         });
 
         objApex.listToDos.forEach(element => {
-            console.log('Todo-name '+ element.name);
             if(!element.name){
                 containsError = true;
                 this.showInfoToast('Warning', 'warning', 'Please fill all the name fields of the To-dos before you send');
@@ -142,9 +137,7 @@ export default class NewProject extends LightningElement {
 
         createProjectWithMilestonesAndTasks({valuesJson : JSON.stringify(objApex) , projectName : this.projectName, ownerId : this.userId})
             .then((projectId) => {
-                console.log('Deu good');
                 this.showInfoToast('Success', 'success', 'Project created with sucess');
-                console.log('projectId '+ projectId);
 
                 window.open('/' + projectId, "_parent");
             })
